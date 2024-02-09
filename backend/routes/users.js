@@ -1,38 +1,30 @@
 import express from 'express';
-import { query, validationResult, body } from 'express-validator';
+import { Router } from 'express';
+import { query, validationResult, matchedData, checkSchema} from 'express-validator';
+import { createUserValidationSchema } from '../models/usersSchema.js';
 
-const userRouter = express.Router();
+const router = Router();
 
 
 const mockUsers = [
     { id: 1, name: "lioune", displayName: "LIOUNE" },
-    { id: 2, name: "adji", displayName: "ADJI" },
+    { id: 2, name: "adji_O", displayName: "ADJI" },
     { id: 3, name: "mouna", displayName: "MOUNA" },
-    { id: 4, name: "omzo", displayName: "OMZO" },
-    { id: 5, name: "babo", displayName: "BABO" }
+    { id: 4, name: "omzoh", displayName: "OMZO" },
+    { id: 5, name: "babo_", displayName: "BABO" }
 ];
 
 //Requête Post (Ce qui permet de créer de nouveaux users)
-userRouter.post("/", 
-body("name")
-.notEmpty()
-.withMessage("Cannot be empty")
-.isLength({min: 5, max: 32})
-.withMessage("Name must be at least 5 characters with a max of 32 characters")
-.isString()
-.withMessage("Name must be a string"),
-body("displayName")
-.notEmpty(),
-(req, res) =>{
-
+router.post("/users", checkSchema(createUserValidationSchema), (req, res) => {
     const result = validationResult(req)
     console.log(result);
     
     if(!result.isEmpty()) return res.status(400).send({ errors: result.array()})
     
-    const { body } = req
+    const data = matchedData(req)
+    console.log(data);
     const newUser = {
-        id: mockUsers[mockUsers.length -1].id + 1, ...body
+        id: mockUsers[mockUsers.length -1].id + 1, ...data
         }
 
     mockUsers.push(newUser)
@@ -40,7 +32,7 @@ body("displayName")
 })
 
 //Requête get (Recupération de tous les users)
-userRouter.get("/", 
+router.get("/users", 
 
        query('filter')
        .isString()
@@ -63,7 +55,7 @@ if(filter && value) return res.send(
 });
 
 //Recupération d'un user avec son id
-userRouter.get("/:id", (req, res) => {
+router.get("/users/:id", (req, res) => {
 
     const parsedId = parseInt(req.params.id)
     if(isNaN(parsedId)) return res.status(400).send("Id not provided")
@@ -76,7 +68,7 @@ userRouter.get("/:id", (req, res) => {
 
 
 //Requête Put (éditer/modifier)
-userRouter.put("/:id", (req, res) =>{
+router.put("/users/:id", (req, res) =>{
     const { body, params:{ id }} = req
     const parsedId = parseInt(id)
     if(isNaN(parsedId)) return res.sendStatus(400)
@@ -88,7 +80,7 @@ return res.sendStatus(200)
 
 })
 
-userRouter.patch("/:id", (req, res) =>{
+router.patch("/users/:id", (req, res) =>{
    const { body, params: { id }} = req;
    const parsedId = parseInt(id)
    if(isNaN(parsedId)) return res.sendStatus(400)
@@ -101,7 +93,7 @@ res.sendStatus(200)
 
 
 //Requête Delete (suppression de user)
-userRouter.delete('/:id', (req, res) => {
+router.delete('/users/:id', (req, res) => {
     const parsedId = parseInt(req.params.id)
     if(isNaN(parsedId)) return res.sendStatus(400)
 
@@ -113,6 +105,6 @@ userRouter.delete('/:id', (req, res) => {
 
 })
 
-export default userRouter
+export default router
 
 //module.exports = userRouter;

@@ -1,5 +1,5 @@
 import express from "express";
-import userRouter from "../backend/routes/users.js";
+import routes from "../backend/routes/index.js"
 import { loggingMiddleware } from "../backend/middleware/logmiddleware.js";
 
 
@@ -10,9 +10,7 @@ const app = express();
 
 app.use(express.json())
 
- 
-
-app.use("/users", userRouter)
+app.use(routes)
 
 app.use(loggingMiddleware, (req, res, next) => {
     console.log("Finished Logging...");
