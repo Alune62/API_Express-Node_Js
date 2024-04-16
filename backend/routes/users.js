@@ -6,12 +6,12 @@ import { createUserValidationSchema } from '../models/usersSchema.js';
 const router = Router();
 
 
-const mockUsers = [
-    { id: 1, name: "lioune", displayName: "LIOUNE" },
-    { id: 2, name: "adji_O", displayName: "ADJI" },
-    { id: 3, name: "mouna", displayName: "MOUNA" },
-    { id: 4, name: "omzoh", displayName: "OMZO" },
-    { id: 5, name: "babo_", displayName: "BABO" }
+ export const mockUsers = [
+    { id: 1, name: "lioune", displayName: "LIOUNE", password:"lioune10" },
+    { id: 2, name: "adji_O", displayName: "ADJI_O", password:"adji20" },
+    { id: 3, name: "mouna", displayName: "MOUNA", password:"mouna20" },
+    { id: 4, name: "omzoh", displayName: "OMZOH" , password:" omzoh10"},
+    { id: 5, name: "babo_m", displayName: "BABO", password: "babo10" }
 ];
 
 //Requête Post (Ce qui permet de créer de nouveaux users)
@@ -41,8 +41,14 @@ router.get("/users",
        .isLength({min : 3, max: 10})
        .withMessage("Must be at least 3-10 characters"),
 
-(req, res, next) => {
-
+    (req, res) => {
+       console.log(req.session.id);
+       req.sessionStore.get(req.session.id, (err, sessionData) => {
+        if(err){
+            console.log(err);
+        }
+        console.log(sessionData);
+       })
        const result = validationResult(req);
        console.log(result);
 
@@ -56,30 +62,26 @@ if(filter && value) return res.send(
 
 //Recupération d'un user avec son id
 router.get("/users/:id", (req, res) => {
-
     const parsedId = parseInt(req.params.id)
     if(isNaN(parsedId)) return res.status(400).send("Id not provided")
 
     const findUser = mockUsers.find((user) => user.id === parsedId)
     if(!findUser) return res.status(404).send("User not Found")
     return res.send(findUser)
-
 })
 
-
 //Requête Put (éditer/modifier)
-router.put("/users/:id", (req, res) =>{
+router.put("/users/:id", (req, res) => {
     const { body, params:{ id }} = req
     const parsedId = parseInt(id)
     if(isNaN(parsedId)) return res.sendStatus(400)
-
     const findIndexUser = mockUsers.findIndex((user) => user.id === parsedId)
     if(findIndexUser === -1) return res.sendStatus(404)
     mockUsers[findIndexUser] = { id: parsedId, ...body}
 return res.sendStatus(200)
-
 })
 
+//Requête Patch (modification partielle)
 router.patch("/users/:id", (req, res) =>{
    const { body, params: { id }} = req;
    const parsedId = parseInt(id)
